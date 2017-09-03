@@ -6,7 +6,7 @@ extern crate try_opt;
 use chrono::{Datelike, NaiveDate};
 
 pub mod calendar_duration;
-pub mod date_iterator;
+pub mod date_iterators;
 
 pub use calendar_duration::{CalendarDuration, add, checked_add};
 

@@ -1,14 +1,7 @@
 use std::cmp::min;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
-use chrono::{
-    Datelike,
-    DateTime,
-    Duration as OldDuration,
-    NaiveDate,
-    NaiveDateTime,
-    TimeZone,
-};
+use chrono::{Datelike, DateTime, Duration as OldDuration, NaiveDate, NaiveDateTime, TimeZone};
 
 use super::last_day_of_month_0;
 
@@ -128,10 +121,10 @@ impl CalendarDuration {
 
     pub fn checked_add(&self, other: &Self) -> Option<Self> {
         Some(CalendarDuration {
-            duration: try_opt!(self.duration.checked_add(&other.duration)),
-            months: try_opt!(self.months.checked_add(other.months)),
-            years: try_opt!(self.years.checked_add(other.years)),
-        })
+                 duration: try_opt!(self.duration.checked_add(&other.duration)),
+                 months: try_opt!(self.months.checked_add(other.months)),
+                 years: try_opt!(self.years.checked_add(other.years)),
+             })
     }
 
     //TODO: Implement checked_mul once there is a new chrono::Duration type
@@ -167,15 +160,23 @@ pub fn add_months_naive_dt(dt: &NaiveDateTime, months: i32) -> Option<NaiveDateT
 }
 
 pub fn add_months_dt<Tz: TimeZone>(dt: &DateTime<Tz>, months: i32) -> Option<DateTime<Tz>> {
-    add_months_naive_dt(&dt.naive_utc(), months).map(|naive| DateTime::from_utc(naive, dt.offset().clone()))
+    add_months_naive_dt(&dt.naive_utc(), months).map(|naive| {
+                                                         DateTime::from_utc(naive,
+                                                                            dt.offset().clone())
+                                                     })
 }
 
 /// Add the `CalendarDuration` to given dt, returning None on overflow.
-/// Note that adding e.g. one month to January 30th will return February 28th. See `CalendarDuration`
-/// for more details.
+/// Note that adding e.g. one month to January 30th will return February 28th.
+/// See `CalendarDuration` for more details.
 /// As we cannot extend DateTime here, simply use a free function.
-pub fn checked_add<Tz: TimeZone>(dt: &DateTime<Tz>, duration: CalendarDuration) -> Option<DateTime<Tz>> {
-    dt.clone().checked_add_signed(duration.duration).and_then(|dt| add_years(&dt, duration.years)).and_then(|dt| add_months_dt(&dt, duration.months))
+pub fn checked_add<Tz: TimeZone>(dt: &DateTime<Tz>,
+                                 duration: CalendarDuration)
+                                 -> Option<DateTime<Tz>> {
+    dt.clone()
+        .checked_add_signed(duration.duration)
+        .and_then(|dt| add_years(&dt, duration.years))
+        .and_then(|dt| add_months_dt(&dt, duration.months))
 }
 
 /// As this crate does not define DateTime, it cannot implement `Add`. Hence this free function.
@@ -268,10 +269,9 @@ mod tests {
         let dt = DateTime::<Utc>::from_str(input).unwrap();
         assert_eq!(input, format!("{:?}", dt));
 
-        let duration = CalendarDuration::days(3) +
-            CalendarDuration::hours(1) +
-            CalendarDuration::months(5) +
-            CalendarDuration::years(1);
+        let duration = CalendarDuration::days(3) + CalendarDuration::hours(1) +
+                       CalendarDuration::months(5) +
+                       CalendarDuration::years(1);
 
         let result = add(&dt, duration);
         assert_eq!("1998-05-22T17:39:57.123Z", format!("{:?}", result));
