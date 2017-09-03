@@ -1,4 +1,3 @@
-
 use chrono::{DateTime, TimeZone};
 
 use calendar_duration::{CalendarDuration, checked_add};
@@ -20,7 +19,7 @@ impl<Tz: TimeZone> OpenEndedDateIterator<Tz> {
 
 /// Iterator that yields dates that until the given `to` date. (All dates are smaller than `to`).
 /// TODO: Find a better name :)
-/// TODO: Once impl Trait is a thing, get rid of this struct and use iterator.take_while()
+/// TODO: Once impl Trait is stable, get rid of this struct and use `iterator.take_while()`
 pub struct ClosedDateIterator<Tz: TimeZone, Iter: Iterator<Item = DateTime<Tz>>> {
     iter: Iter,
     to: DateTime<Tz>,
@@ -51,24 +50,20 @@ impl<Tz: TimeZone> Iterator for OpenEndedDateIterator<Tz> {
 
     fn next(&mut self) -> Option<Self::Item> {
         //TODO: The multiplication should be checked_mul as well but we'll wait for a better `Duration` type for that...
-        let next = checked_add(&self.from, &self.duration * self.iterations);
+        let next = checked_add(&self.from, &(&self.duration * self.iterations));
         self.iterations += 1;
         next
     }
 }
 
-impl<Tz: TimeZone, Iter: Iterator<Item=DateTime<Tz>>> Iterator for ClosedDateIterator<Tz, Iter> {
+impl<Tz: TimeZone, Iter: Iterator<Item = DateTime<Tz>>> Iterator for ClosedDateIterator<Tz, Iter> {
     type Item = DateTime<Tz>;
 
     fn next(&mut self) -> Option<Self::Item> {
         //this would be really cool if Option.filter() existed :)
-        self.iter.next().and_then(|dt| {
-            if dt < self.to {
-                Some(dt)
-            } else {
-                None
-            }
-        })
+        self.iter
+            .next()
+            .and_then(|dt| if dt < self.to { Some(dt) } else { None })
     }
 }
 

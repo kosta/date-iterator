@@ -169,9 +169,9 @@ pub fn add_months_dt<Tz: TimeZone>(dt: &DateTime<Tz>, months: i32) -> Option<Dat
 /// Add the `CalendarDuration` to given dt, returning None on overflow.
 /// Note that adding e.g. one month to January 30th will return February 28th.
 /// See `CalendarDuration` for more details.
-/// As we cannot extend DateTime here, simply use a free function.
+/// As we cannot extend `DateTime` here, simply use a free function.
 pub fn checked_add<Tz: TimeZone>(dt: &DateTime<Tz>,
-                                 duration: CalendarDuration)
+                                 duration: &CalendarDuration)
                                  -> Option<DateTime<Tz>> {
     dt.clone()
         .checked_add_signed(duration.duration)
@@ -179,8 +179,8 @@ pub fn checked_add<Tz: TimeZone>(dt: &DateTime<Tz>,
         .and_then(|dt| add_months_dt(&dt, duration.months))
 }
 
-/// As this crate does not define DateTime, it cannot implement `Add`. Hence this free function.
-pub fn add<Tz: TimeZone>(dt: &DateTime<Tz>, duration: CalendarDuration) -> DateTime<Tz> {
+/// As this crate does not define `DateTime`, it cannot implement `Add`. Hence this free function.
+pub fn add<Tz: TimeZone>(dt: &DateTime<Tz>, duration: &CalendarDuration) -> DateTime<Tz> {
     checked_add(dt, duration).expect("add(DateTime, CalendarDuration) overflowed")
 }
 
@@ -273,7 +273,7 @@ mod tests {
                        CalendarDuration::months(5) +
                        CalendarDuration::years(1);
 
-        let result = add(&dt, duration);
+        let result = add(&dt, &duration);
         assert_eq!("1998-05-22T17:39:57.123Z", format!("{:?}", result));
     }
 
@@ -286,7 +286,7 @@ mod tests {
 
         let duration = CalendarDuration::years(300_000);
 
-        add(&dt, duration);
+        add(&dt, &duration);
     }
 
     #[test]
@@ -297,7 +297,7 @@ mod tests {
 
         let duration = CalendarDuration::years(300_000);
 
-        assert_eq!(None, checked_add(&dt, duration));
+        assert_eq!(None, checked_add(&dt, &duration));
     }
 
     #[test]
@@ -307,17 +307,17 @@ mod tests {
         assert_eq!(input, format!("{:?}", dt));
 
         let duration = CalendarDuration::months(2);
-        let result = add(&dt, duration);
+        let result = add(&dt, &duration);
         //Note how february doesn't have a 31st day...
         assert_eq!("1997-02-28T16:39:57.123Z", format!("{:?}", result));
 
         let duration = CalendarDuration::months(4);
-        let result = add(&dt, duration);
+        let result = add(&dt, &duration);
         //...and neither has april
         assert_eq!("1997-04-30T16:39:57.123Z", format!("{:?}", result));
 
         let duration = CalendarDuration::months(5);
-        let result = add(&dt, duration);
+        let result = add(&dt, &duration);
         //But May is ok
         assert_eq!("1997-05-31T16:39:57.123Z", format!("{:?}", result));
     }
