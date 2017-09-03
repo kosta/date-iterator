@@ -1,0 +1,8 @@
+[package]
+name = "date-iterator"
+version = "0.1.0"
+authors = ["Kosta Welke <kw@trinatives.com>"]
+
+[dependencies]
+chrono = "0.4"
+try_opt = "0.1.1"
