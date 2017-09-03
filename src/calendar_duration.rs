@@ -217,7 +217,8 @@ impl Sub for CalendarDuration {
     }
 }
 
-impl Mul<i32> for CalendarDuration {
+// TODO: Does it make sense to implement for &'a?
+impl<'a> Mul<i32> for &'a CalendarDuration {
     type Output = CalendarDuration;
 
     fn mul(self, rhs: i32) -> CalendarDuration {
