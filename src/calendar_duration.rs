@@ -169,7 +169,12 @@ pub fn add_months_dt<Tz: TimeZone>(dt: &DateTime<Tz>, months: i32) -> Option<Dat
 /// Add the `CalendarDuration` to given dt, returning None on overflow.
 /// Note that adding e.g. one month to January 30th will return February 28th.
 /// See `CalendarDuration` for more details.
+///
 /// As we cannot extend `DateTime` here, simply use a free function.
+///
+/// TODO: In which order should these operations be applied? Here we first add the
+/// duration in seconds, then the years, then the months which seems a bit arbitrary.
+/// python's datutil first add years, then months, then seconds: http://labix.org/python-dateutil#head-72c4689ec5608067d118b9143cef6bdffb6dad4e
 pub fn checked_add<Tz: TimeZone>(dt: &DateTime<Tz>,
                                  duration: &CalendarDuration)
                                  -> Option<DateTime<Tz>> {
