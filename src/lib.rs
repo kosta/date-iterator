@@ -9,7 +9,7 @@ pub mod calendar_duration;
 pub mod date_iterators;
 
 pub use calendar_duration::{CalendarDuration, add, checked_add};
-pub use date_iterators::{OpenEndedDateIterator, ClosedDateIterator, date_iterator_from,
+pub use date_iterators::{OpenEndedDateIterator, ClosedDateIterator, PairwiseDateIterator, date_iterator_from,
                          date_iterator_to, date_iterator_from_to};
 
 //from https://github.com/chronotope/chrono/issues/29

@@ -2,27 +2,60 @@ use chrono::{DateTime, TimeZone};
 
 use calendar_duration::{CalendarDuration, checked_add};
 
+pub trait HasCalendarDuration {
+    fn duration(&self) -> &CalendarDuration;
+}
+
 /// Iterator as returned by `date_iterator_from`
 ///
 /// TODO: How to make this generic over Datelike?
+#[derive(Debug)]
 pub struct OpenEndedDateIterator<Tz: TimeZone> {
     from: DateTime<Tz>,
     duration: CalendarDuration,
     iterations: i32,
 }
 
+impl<Tz: TimeZone> HasCalendarDuration for OpenEndedDateIterator<Tz> {
+    fn duration(&self) -> &CalendarDuration {
+        &self.duration
+    }
+}
+
 impl<Tz: TimeZone> OpenEndedDateIterator<Tz> {
     pub fn to(self, to: DateTime<Tz>) -> ClosedDateIterator<Tz, Self> {
         date_iterator_to(self, to)
+    }
+
+    pub fn pairwise(self) -> PairwiseDateIterator<Tz, Self> {
+        pairwise(self)
     }
 }
 
 /// Iterator that yields dates that until the given `to` date. (All dates are smaller than `to`).
 /// TODO: Find a better name :)
 /// TODO: Once impl Trait is stable, get rid of this struct and use `iterator.take_while()`
+#[derive(Debug)]
 pub struct ClosedDateIterator<Tz: TimeZone, Iter: Iterator<Item = DateTime<Tz>>> {
     iter: Iter,
     to: DateTime<Tz>,
+}
+
+impl<Tz: TimeZone, Iter> HasCalendarDuration
+    for ClosedDateIterator<Tz, Iter>
+    where Iter: HasCalendarDuration + Iterator<Item = DateTime<Tz>>
+{
+    fn duration(&self) -> &CalendarDuration {
+        self.iter.duration()
+    }
+}
+
+impl<Tz: TimeZone, Iter> ClosedDateIterator<Tz, Iter>
+    where Iter: HasCalendarDuration + Iterator<Item = DateTime<Tz>>
+{
+    pub fn pairwise(self) -> PairwiseDateIterator<Tz, Self> {
+        pairwise(self)
+    }
 }
 
 /// returns an open ended `Iterator`, that will first yield `dt`
@@ -54,6 +87,30 @@ pub fn date_iterator_from_to<Tz: TimeZone, D: Into<CalendarDuration>>
     date_iterator_from(from, duration).to(to)
 }
 
+pub fn pairwise<Tz: TimeZone, Iter>
+    (iter: Iter)
+     -> PairwiseDateIterator<Tz, Iter>
+    where Iter: HasCalendarDuration + Iterator<Item = DateTime<Tz>>
+{
+    PairwiseDateIterator { iter: iter }
+}
+
+#[derive(Debug)]
+pub struct PairwiseDateIterator<Tz: TimeZone, Iter>
+    where Iter: HasCalendarDuration + Iterator<Item = DateTime<Tz>>
+{
+    iter: Iter,
+}
+
+impl<Tz: TimeZone, Iter> HasCalendarDuration
+    for PairwiseDateIterator<Tz, Iter>
+    where Iter: HasCalendarDuration + Iterator<Item = DateTime<Tz>>
+{
+    fn duration(&self) -> &CalendarDuration {
+        self.iter.duration()
+    }
+}
+
 impl<Tz: TimeZone> Iterator for OpenEndedDateIterator<Tz> {
     type Item = DateTime<Tz>;
 
@@ -73,6 +130,21 @@ impl<Tz: TimeZone, Iter: Iterator<Item = DateTime<Tz>>> Iterator for ClosedDateI
         self.iter
             .next()
             .and_then(|dt| if dt < self.to { Some(dt) } else { None })
+    }
+}
+
+impl<Tz: TimeZone, Iter> Iterator for PairwiseDateIterator<Tz, Iter>
+    where Iter: HasCalendarDuration + Iterator<Item = DateTime<Tz>>
+{
+    type Item = (DateTime<Tz>, DateTime<Tz>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter
+            .next()
+            .and_then(|start| {
+                          let end = try_opt!(super::checked_add(&start, self.iter.duration()));
+                          Some((start, end))
+                      })
     }
 }
 
