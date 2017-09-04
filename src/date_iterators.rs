@@ -45,6 +45,15 @@ pub fn date_iterator_to<Tz: TimeZone, Iter: Iterator<Item = DateTime<Tz>>>
     ClosedDateIterator { iter: iter, to: to }
 }
 
+pub fn date_iterator_from_to<Tz: TimeZone, D: Into<CalendarDuration>>
+    (from: DateTime<Tz>,
+     duration: D,
+     to: DateTime<Tz>)
+     -> ClosedDateIterator<Tz, OpenEndedDateIterator<Tz>> {
+
+    date_iterator_from(from, duration).to(to)
+}
+
 impl<Tz: TimeZone> Iterator for OpenEndedDateIterator<Tz> {
     type Item = DateTime<Tz>;
 
