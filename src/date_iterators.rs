@@ -37,6 +37,9 @@ impl<Tz: TimeZone> OpenEndedDateIterator<Tz> {
     }
 }
 
+/// As returned by [`OpenEndedDateIterator::pairwise()`] method. See comment there.
+///
+/// [`OpenEndedDateIterator::pairwise()`]: struct.OpenEndedDateIterator.html#method.pairwise
 #[derive(Debug)]
 pub struct OpenEndedPairwiseDateIterator<Tz: TimeZone> {
     iter: OpenEndedDateIterator<Tz>,
@@ -52,6 +55,10 @@ pub struct ClosedDateIterator<Tz: TimeZone, Iter: Iterator<Item = DateTime<Tz>>>
 }
 
 impl<Tz: TimeZone> ClosedDateIterator<Tz, OpenEndedDateIterator<Tz>> {
+
+    /// see comment on [`OpenEndedDateIterator::pairwise()`]
+    ///
+    ///[`OpenEndedDateIterator::pairwise()`]: struct.OpenEndedDateIterator.html#method.pairwise
     pub fn pairwise(self) -> ClosedPairwiseDateIterator<Tz> {
         ClosedPairwiseDateIterator {
             iter: self.iter.pairwise(),
@@ -60,6 +67,10 @@ impl<Tz: TimeZone> ClosedDateIterator<Tz, OpenEndedDateIterator<Tz>> {
     }
 }
 
+/// As returned by [`ClosedDateIterator::pairwise()`]. See comment on [`OpenEndedDateIterator::pairwise()`]
+///
+///[`ClosedDateIterator::pairwise()`]: struct.ClosedDateIterator.html#method.pairwise
+///[`OpenEndedDateIterator::pairwise()`]: struct.OpenEndedDateIterator.html#method.pairwise
 #[derive(Debug)]
 pub struct ClosedPairwiseDateIterator<Tz: TimeZone> {
     iter: OpenEndedPairwiseDateIterator<Tz>,
