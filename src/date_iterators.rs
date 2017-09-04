@@ -17,12 +17,21 @@ impl<Tz: TimeZone> OpenEndedDateIterator<Tz> {
         date_iterator_to(self, to)
     }
 
+    /// needed here so that pairwise can work
     fn current(&self) -> Option<DateTime<Tz>> {
         //TODO: The multiplication should be checked_mul as well but we'll wait for a better `Duration` type for that...
         checked_add(&self.from, &(&self.duration * self.iterations))
     }
 
-    /// returns a pairwise iterator of (next, after_next) dates. This is useful as
+    /// returns a pairwise iterator of (next, after_next) dates. This is if you use the date iterator to
+    /// e.g. slice a time range into Months. Note that it is not sufficient to take the date returned by
+    /// `next()` and add `duration` as this can lead to overlapping slices.
+    ///
+    /// As an example e.g. if your starting date is
+    /// e.g. January 31st and your duration is 1 month. pairwise iteration will yield (January 31st, Feb 28th),
+    /// (Feb 28th, March 30th), (March 30th, April 31st), etc. This is different from if you simply used a
+    /// date iterator (which would yield January 31st, Feb 28th, March 30th) and construct pairs by adding one
+    /// month, which leads to errorneous (Feb 28th, March 28th) on the second iteration.
     pub fn pairwise(self) -> OpenEndedPairwiseDateIterator<Tz> {
         OpenEndedPairwiseDateIterator { iter: self }
     }
